@@ -1,0 +1,38 @@
+# Trex Settings
+---
+remotes:
+  production:
+    api:
+      host: https://api.translationexchange.com
+    gateway:
+      host: https://gateway.translationexchange.com
+  staging:
+    api:
+      host: https://staging-api.translationexchange.com
+    gateway:
+      host: https://staging-gateway.translationexchange.com
+  sandbox:
+    api:
+      host: https://sandbox-api.translationexchange.com
+    gateway:
+      host: https://sandbox-gateway.translationexchange.com
+  development:
+    api:
+      host: http://localhost:3000
+    gateway:
+      host: http://localhost:3008
+
+connections:
+  local:
+    url: DBI:Pg:translations
+    username: michael
+
+projects:
+  local:
+    remote: development
+    key:
+    token:
+
+current:
+  project: local
+  locale: en
