@@ -36,42 +36,6 @@ require 'treetop'
 module Trex
   module Parsers
 
-    class IntegerLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_i
-      end
-    end
-
-    class StringLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        eval self.text_value
-      end
-    end
-
-    class FloatLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_f
-      end
-    end
-
-    class Identifier < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_sym
-      end
-    end
-
-    class Expression < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements[0].to_array
-      end
-    end
-
-    class Body < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements.map {|x| x.to_array}
-      end
-    end
-
     class Base
 
       def self.base_path
