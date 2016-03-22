@@ -1,0 +1,110 @@
+TML {
+Exp
+  = ((~TMLExp any)* TMLExp+)+ ~TMLExp any*
+
+// TMLLocalizedString* expression
+TMLExp
+  = Macro "(" ListOf<ArgsExp, ","> ")" space* ";"*
+  
+Macro
+  = "TMLLocalizedString"
+  | "TMLLocalizedAttributedString"
+  | "TMLLocalizedDate"
+  | "TMLLocalizedAttributedDate"
+
+
+// TMLLocalized argument expression
+ArgsExp
+  = NullExp | LiteralExp | ObjectExp | MessageExp | VariableExp
+
+
+// Null Expression
+NullExp
+  = "nil"
+  | "NULL"
+  
+VariableExp
+  = (alnum|"_"|"-")+
+
+// Literal Objects
+LiteralExp
+  = NumberExp 
+  | StringExp
+  
+ObjectExp
+  = StringObjectExp
+  | NumberObjectExp
+  | DictExp
+  | ArrayExp
+  
+
+// Numbers
+NumberExp
+  = digit+
+
+NumberObjectExp
+  = "@" NumberExp
+
+// Strings
+StringObjectExp
+  = BeginStringQuote stringCharsExp EndStringQuote StringObjectAdditionalLinesExp?
+  
+StringObjectAdditionalLinesExp
+  =  (BeginSecondLineStringQuote stringCharsExp EndStringQuote)*
+
+StringExp
+  = "\"" stringCharsExp "\""
+
+stringCharsExp
+  = stringChar*
+
+stringChar
+  = "\\\""
+  | ~"\"" any
+  
+BeginStringQuote
+  = "@\""
+  
+BeginSecondLineStringQuote
+  =  BeginStringQuote
+  | "\""
+
+EndStringQuote
+  = "\""
+
+// Dictionary
+DictExp
+  = "@{" ListOf<DictEntryExp, ","> "}"
+  
+DictEntryExp
+  = StringObjectExp ":" DictValueExp
+  
+DictValueExp
+  = ArgsExp
+
+
+// Array
+ArrayExp
+  = "@[" ListOf<ArrayEntryExp, ","> "]"
+
+ArrayEntryExp
+  = ArgsExp
+
+
+// Message
+MessageExp
+  = "[" #(messageComponentChar+) (ArgumentMessageExp | NoArgumentMessageExp) "]"
+
+NoArgumentMessageExp
+  = messageComponentChar+
+
+ArgumentMessageExp
+  = messageComponentChar+ ":" ArgsExp
+
+MessageComponent
+  = messageComponentChar+
+
+messageComponentChar
+  = ~("["|"]"|":"|space) any
+
+}
