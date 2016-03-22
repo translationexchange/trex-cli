@@ -63,10 +63,13 @@ module Trex
       end
 
       def api(path, params = {}, opts = {})
-        host = opts[:host] || current_remote['api']['host']
+        host = opts[:host]
+        host ||= current_remote['api']['host'] if current_remote
         method = opts[:method] || :get
 
-        params = params.merge(access_token: current_remote['access_token'])
+        if current_remote
+          params = params.merge(access_token: current_remote['access_token'])
+        end
 
         # pp "#{method} #{host}/#{path}"
         conn = Faraday.new(:url => host) do |faraday|

@@ -36,7 +36,7 @@ module Trex
     class Project < Trex::Commands::Base
       namespace :project
 
-      map 'l' => :index
+      map 'l' => :list
       desc 'list', 'Lists all apps and allows you to switch between them'
       method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
       method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
