@@ -32,8 +32,18 @@
 #++
 
 module Trex
-  module Scanners
-    class Objc < Trex::Scanners::Base
+  module Extractors
+    class Objc < Trex::Extractors::Base
+
+      def self.pattern
+        /.*\.(c)/
+      end
+
+      def process
+        output = Trex::Parsers::Objs.parse(content)
+        pp output
+        write_keys(output)
+      end
 
     end
   end

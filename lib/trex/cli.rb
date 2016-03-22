@@ -33,7 +33,7 @@
 
 module Trex
   class Cli < Trex::Commands::Base
-    
+
     desc 'login', 'Authorizes user with a remote service'
     def login
       say('Which server would you like to authorize?')

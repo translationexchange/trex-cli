@@ -32,31 +32,19 @@
 #++
 
 module Trex
-  module Commands
-  end
-  module Tasks
-  end
-end
+  module Extractors
+    class Rails < Trex::Extractors::Base
 
-%w(
-    trex/config.rb trex/commands/base.rb
-    trex/commands/project_translator.rb trex/commands/project_language.rb
-    trex/commands/project_translation_key.rb trex/commands/project_translation.rb
-    trex/commands/source_translation_key.rb trex/commands/source_translation.rb
-    trex/commands/request.rb trex/commands/source.rb
-    trex/commands
-    trex/tasks/base.rb
-    trex/tasks trex/cli.rb
-    trex/parsers/nodes/base.rb trex/parsers/nodes trex/parsers/base.rb trex/parsers
-    trex/extractors/base.rb trex/extractors
-).each do |f|
-  if f.index('.rb')
-    file = File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', f))
-    require(file)
-    next
-  end
+      def self.pattern
+        /.*\.(erb|rb)/
+      end
 
-  Dir[File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', f, '*.rb'))].sort.each do |file|
-    require(file)
+      def process
+        output = Trex::Parsers::Rails.parse(content)
+        pp output
+        write_keys(output)
+      end
+
+    end
   end
 end

@@ -122,12 +122,14 @@ module Trex
         print_object(get("v1/projects/#{current_project_key}"))
       end
 
-      map 'i' => :import
-      desc 'import', 'Imports translation keys from a specific file or path'
-      method_option :path, :type => :string, :aliases => '-p', :required => true, :banner => 'Path where to start scanning for tr method references', :default => nil
-      def import
-        ensure_project_selected
-        Scanners::Base.scan(self, options[:path])
+      map 'x' => :extract
+      desc 'extract', 'Extracts translation keys from a specific file or path'
+      method_option :source, :type => :string, :aliases => '-s', :required => true, :banner => 'File or directory path', :default => nil
+      method_option :destination, :type => :string, :aliases => '-d', :required => false, :banner => 'Path for extracted files', :default => nil
+      method_option :grammar, :type => :string, :aliases => '-g', :required => false, :banner => 'Grammar file path', :default => nil
+      def extract
+        # ensure_project_selected
+        Extractors::Base.extract(self, options[:source], options[:destination], options[:grammar])
       end
 
       desc 'translator SUBCOMMAND ...ARGS', 'Project translator commands'

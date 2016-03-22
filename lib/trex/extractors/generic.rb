@@ -32,50 +32,42 @@
 #++
 
 module Trex
-  module Scanners
-    class Rails < Trex::Scanners::Base
+  module Extractors
+    class Generic < Trex::Extractors::Base
 
-      def self.pattern
-        /.*\.(erb)/
+      def grammar_name
+        @grammar_name ||= begin
+          data = File.read(grammar_path)
+          data.scan(/grammar\s*([^\s]*)/)[0][0]
+        end
       end
 
-      def expressions
-        [
-            {
-                expression: /<%=\s*tr[l]?\s*[\(]?\s*"([^"]*)"\s*[\)]?\s*%>/,
-                context: false
-            },
-            {
-                expression: /<%=\s*tr[l]?\s*[\(]?\s*'([^']*)'\s*[\)]?\s*%>/,
-                context: false
-            } # ,
-            # {
-            #     expression: /[^.]tr\s*[\(]?\s*"([^"]*)"\s*,\s*["']([^"']*)["']\s*[\)]?/,
-            #     context: true
-            # }
-        ]
+      def parser
+        @parser ||= begin
+          Treetop.load(grammar_path)
+          Module.const_get("#{grammar_name}Parser").new
+        end
       end
 
       def process
-        # content.match(//)
+        pp "Using #{grammar_name} grammar"
 
-        strings = []
+        tree = parser.parse(content)
 
-        expressions.each do |expression|
-          content.scan(expression[:expression]).each do |matches|
-            matches.each do |match|
-              next if match.nil?
-              strings << {
-                  label: match
-              }
-            end
-          end
+        if tree.nil?
+          abort('Parse tree is empty')
         end
 
+        pp tree
 
-        # cmd.app
+        clean_parse_tree(tree)
 
-        pp strings
+        if tree.respond_to?(:to_array)
+          tree = tree.to_array
+        end
+
+        pp tree
+        write_keys(tree)
       end
 
     end

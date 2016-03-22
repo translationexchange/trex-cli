@@ -1,0 +1,23 @@
+grammar Objc
+
+  rule invocation
+    space? method '(' params ')' space? <Trex::Parsers::Nodes::Invocation> / space? method params <Trex::Parsers::Nodes::Invocation>
+  end
+
+  rule method
+    'tr' 'l'? <Trex::Parsers::Nodes::Method>
+  end
+
+  rule params
+    space? string space? <Trex::Parsers::Nodes::Params> / space? string space? ',' space? string space? <Trex::Parsers::Nodes::Params>
+  end
+
+  rule string
+    '"' ([^"\\] / "\\" . )* '"' <Trex::Parsers::Nodes::String> / "'" ([^'\\] / "\\" . )* "'" <Trex::Parsers::Nodes::String>
+  end
+
+  rule space
+    [\s]+
+  end
+
+end
