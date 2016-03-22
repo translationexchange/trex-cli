@@ -38,7 +38,7 @@
     "tml"
   ],
   "scripts": {
-    "parse": "node ./srv/bin/www",
+    "parse": "node ./lib/parse",
     "test": "grunt test"
   },
   "dependencies": {
