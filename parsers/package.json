@@ -38,7 +38,7 @@
     "tml"
   ],
   "scripts": {
-    "parse": "node ./lib/parse",
+    "genstrings": "./lib/genstrings.js",
     "test": "grunt test"
   },
   "dependencies": {
