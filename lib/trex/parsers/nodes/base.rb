@@ -35,65 +35,16 @@ require 'treetop'
 
 module Trex
   module Parsers
+    module Nodes
+      class Base < Treetop::Runtime::SyntaxNode
 
-    class IntegerLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_i
+        def to_array
+          self.elements[0].to_array
+        end
+
       end
-    end
-
-    class StringLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        eval self.text_value
-      end
-    end
-
-    class FloatLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_f
-      end
-    end
-
-    class Identifier < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_sym
-      end
-    end
-
-    class Expression < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements[0].to_array
-      end
-    end
-
-    class Body < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements.map {|x| x.to_array}
-      end
-    end
-
-    class Base
-
-      def self.base_path
-        @base_path ||= File.expand_path(File.dirname(__FILE__))
-      end
-
-      def self.grammar_base_path
-        @grammar_base_path ||= File.expand_path(File.join(base_path, '..', 'grammars'))
-      end
-
-      def self.grammar_path(name)
-        File.join(grammar_base_path, name)
-      end
-
-      protected
-
-      def self.clean_tree(root_node)
-        return if(root_node.elements.nil?)
-        root_node.elements.delete_if{|node| node.class.name == 'Treetop::Runtime::SyntaxNode' }
-        root_node.elements.each {|node| self.clean_tree(node) }
-      end
-
     end
   end
 end
+
+

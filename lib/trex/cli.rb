@@ -40,7 +40,54 @@ module Trex
       end
     end
 
-    desc 'reset', 'deletes configuration file'
+    desc 'login', 'Authorizes user with a remote service'
+    def login
+      say('Which server would you like to authorize?')
+      print_objects(remote_list, {
+          :header => 'TrEx Environments:',
+          :with_numbers => true
+      })
+      value = ask_for_number(remote_list.size)
+      remote = remote_list[value-1]
+
+      email = ask('Enter your email: ')
+      password = ask_for_password('Enter your password: ')
+
+      data = post('authorize', {email: email, password: password}, {host: remote['gateway']})
+
+      if data['status']['code'] != 0
+        say data['status']['msg']
+      end
+
+      remotes[remote['env']]['access_token'] = data['results']['access_token']
+      current_config['remote'] = remote['env']
+      update_config
+
+      whoami
+    end
+
+    desc 'logout', 'Logs user out from all remotes'
+    def logout
+      remotes.keys.each do |key|
+        remotes[key]['access_token'] = nil
+      end
+
+      update_config
+      say 'You have been logged out from all remote services'
+    end
+
+    desc 'whoami', 'shows you who you are and which remote you are connected to'
+    def whoami
+      # pp config
+      # pp current_config
+      data = get('v1/users/me')
+
+      say
+      say "You are logged in to #{current_config['remote']} environment as: \n"
+      print_object(data, columns: [:id, :email, :display_name, :first_name, :last_name, :gender, :time_zone, :mugshot, :admin])
+    end
+
+    desc 'reset', 'Deletes configuration file'
     def reset
       if File.exists?("#{CONFIG_PATH}/config.yml")
         FileUtils.rm("#{CONFIG_PATH}/config.yml")
@@ -48,69 +95,57 @@ module Trex
       say 'Configuration has been removed.'
     end
 
-    map 'tr' => :translate
-    desc 'translate', 'translates a label'
-    method_option :label, :type => :string, :aliases => '-l', :required => true, :banner => 'label', :default => nil
-    method_option :description, :type => :string, :aliases => '-d', :required => false, :banner => 'context', :default => nil
-    method_option :tokens, :type => :string, :aliases => '-t', :required => false, :banner => 'tokens', :default => nil
-    method_option :options, :type => :string, :aliases => '-o', :required => false, :banner => 'options', :default => nil
-    def translate
-      say(tr(options[:label], options[:description]))
-    end
+    # map 'tr' => :translate
+    # desc 'translate', 'translates a label'
+    # method_option :label, :type => :string, :aliases => '-l', :required => true, :banner => 'label', :default => nil
+    # method_option :description, :type => :string, :aliases => '-d', :required => false, :banner => 'context', :default => nil
+    # method_option :tokens, :type => :string, :aliases => '-t', :required => false, :banner => 'tokens', :default => nil
+    # method_option :options, :type => :string, :aliases => '-o', :required => false, :banner => 'options', :default => nil
+    # def translate
+    #   say(tr(options[:label], options[:description]))
+    # end
 
-    desc 'itr', 'starts interactive shell'
-    def itr
-      help = [
-          ['shortcut', 'description'],
-          ['\q', 'quit'],
-          ['\h', 'help']
-      ]
+    # desc 'itr', 'Starts interactive shell'
+    # def itr
+    #   help = [
+    #       %w(shortcut description),
+    #       %w(\q quit),
+    #       %w(\h help)
+    #   ]
+    #
+    #   print_table(help)
+    #   value = ask '->'
+    #
+    #   while true do
+    #     opts = value.split(' ')
+    #     # params = opts.size > 1 ? opts[1..-1] : []
+    #
+    #     case opts.first
+    #       when '\q'
+    #         return
+    #       when '\h'
+    #         print_table(help)
+    #       else
+    #         say tr(value)
+    #       end
+    #
+    #     value = ask '->'
+    #   end
+    # end
 
-      print_table(help)
-      value = ask '->'
-
-      while true do
-        opts = value.split(' ')
-        # params = opts.size > 1 ? opts[1..-1] : []
-
-        case opts.first
-          when '\q'
-            return
-          when '\h'
-            print_table(help)
-          else
-            say tr(value)
-          end
-
-        value = ask '->'
-      end
-    end
-
-    desc 'rules SUBCOMMAND ...ARGS', 'test and evaluate Tr8n rules'
+    desc 'rules SUBCOMMAND ...ARGS', 'Test and evaluate TML rules'
     subcommand 'rules', Trex::Commands::Rules
 
-    desc 'remote SUBCOMMAND ...ARGS', 'manage which host the applications are located at'
+    desc 'remote SUBCOMMAND ...ARGS', 'Manage which host the applications are located at'
     subcommand 'remote', Trex::Commands::Remote
 
-    desc 'connection SUBCOMMAND ...ARGS', 'manage which database the applications are stored in'
-    subcommand 'connection', Trex::Commands::Connection
+    # desc 'connection SUBCOMMAND ...ARGS', 'manage which database the applications are stored in'
+    # subcommand 'connection', Trex::Commands::Connection
 
-    desc 'key SUBCOMMAND ...ARGS', 'translation key commands'
-    subcommand 'key', Trex::Commands::TranslationKey
-
-    desc 'translator SUBCOMMAND ...ARGS', 'translator commands'
-    subcommand 'translator', Trex::Commands::Translator
-
-    desc 'language SUBCOMMAND ...ARGS', 'language commands'
+    desc 'language SUBCOMMAND ...ARGS', 'Language commands'
     subcommand 'language', Trex::Commands::Language
 
-    desc 'translation SUBCOMMAND ...ARGS', 'translation commands'
-    subcommand 'translation', Trex::Commands::Translation
-
-    desc 'source SUBCOMMAND ...ARGS', 'source commands'
-    subcommand 'source', Trex::Commands::Source
-
-    desc 'app SUBCOMMAND ...ARGS', 'project commands'
+    desc 'project SUBCOMMAND ...ARGS', 'Project commands'
     subcommand 'project', Trex::Commands::Project
 
     private

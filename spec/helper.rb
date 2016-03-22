@@ -1,5 +1,6 @@
 require 'rspec'
 require 'json'
+require 'trex_cli'
 
 def fixtures_root
   File.join(File.dirname(__FILE__), 'fixtures')

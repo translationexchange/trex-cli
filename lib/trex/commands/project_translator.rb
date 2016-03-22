@@ -33,32 +33,49 @@
 
 module Trex
   module Commands
-    class Language < Trex::Commands::Base
-      namespace :language
+    class ProjectTranslator < Trex::Commands::Base
+      namespace :translator
 
       map 'l' => :list
-      desc 'list', 'Lists all languages in Translation Exchange'
-      method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
-      method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
+      desc 'list', 'Lists all translators for the current project'
       def list
-        paginate('v1/languages', {search: options[:search], per_page: options[:per_page]}, {
-           :header => "Languages from #{current_config['remote']}:",
-           :index => true
+        ensure_project_selected
+
+        paginate("v1/projects/#{current_project_key}/translators", {}, {
+           :header => "#{current_project_name} translators:",
+           :index => true,
+           :columns => [:id, 'translator.user_id', 'translator.email', 'translator.display_name', 'translator.rank', :created_at, :updated_at]
         })
-        say
       end
 
-      map 's' => :show
-      desc 'show', 'Shows information about a language'
-      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to view', :default => nil
-      def show
-        locale = options[:locale] || ask('What locale would you like to see? ')
+      map 'i' => :invite
+      desc 'invite', 'Invites a translator'
+      method_option :emails, :type => :string, :aliases => '-e', :required => false, :banner => 'emails of the translators to be invited', :default => nil
+      method_option :message, :type => :string, :aliases => '-m', :required => false, :banner => 'message to the translators', :default => ''
+      method_option :role, :type => :string, :aliases => '-r', :required => false, :banner => 'role of the translator', :default => 'translator'
+      def invite
+        ensure_project_selected
 
-        data = get("v1/languages/#{locale}")
+        emails = options[:emails] || ask('What is the email of the translator you would like to invite? ')
 
-        print_object(data, :header => 'Language details:')
+        post("v1/projects/#{current_project_key}/requests", {emails: emails, type: 'invite', role: options[:role], message: options[:message]})
+
+        say("The following emails have been invited: #{emails}")
       end
 
+      map 'r' => :remove
+      desc 'remove', 'Removes translator from the project'
+      method_option :id, :type => :string, :aliases => '-i', :required => false, :banner => 'project translator id to be removed', :default => nil
+      def remove
+        ensure_project_selected
+
+        id = options[:id] || ask('What is the id of the project translator record you would like to remove? ')
+
+        delete("v1/projects/#{current_project_key}/translators/#{id}")
+
+        say("Translator '#{id}' has been removed")
+        list
+      end
     end
   end
 end

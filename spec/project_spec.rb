@@ -2,7 +2,7 @@
 
 require 'helper'
 
-describe Trex::Commands::Base do
+describe Trex::Commands::Project do
   describe "#init" do
     it "sets class attributes" do
 

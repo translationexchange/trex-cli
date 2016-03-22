@@ -31,67 +31,23 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-require 'treetop'
-
 module Trex
-  module Parsers
+  module Commands
+    class ProjectTranslation < Trex::Commands::Base
+      namespace :translation
 
-    class IntegerLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_i
-      end
-    end
+      map 'l' => :list
+      desc 'list', 'Lists all translations for the current project'
+      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to remove', :default => nil
+      method_option :filter, :type => :string, :aliases => '-f', :required => false, :banner => 'filters translations (submitted, locked, unlocked, purchased, imported, ignored)', :default => nil
+      def list
+        ensure_project_selected
 
-    class StringLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        eval self.text_value
-      end
-    end
-
-    class FloatLiteral < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_f
-      end
-    end
-
-    class Identifier < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.text_value.to_sym
-      end
-    end
-
-    class Expression < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements[0].to_array
-      end
-    end
-
-    class Body < Treetop::Runtime::SyntaxNode
-      def to_array
-        self.elements.map {|x| x.to_array}
-      end
-    end
-
-    class Base
-
-      def self.base_path
-        @base_path ||= File.expand_path(File.dirname(__FILE__))
-      end
-
-      def self.grammar_base_path
-        @grammar_base_path ||= File.expand_path(File.join(base_path, '..', 'grammars'))
-      end
-
-      def self.grammar_path(name)
-        File.join(grammar_base_path, name)
-      end
-
-      protected
-
-      def self.clean_tree(root_node)
-        return if(root_node.elements.nil?)
-        root_node.elements.delete_if{|node| node.class.name == 'Treetop::Runtime::SyntaxNode' }
-        root_node.elements.each {|node| self.clean_tree(node) }
+        paginate("v1/projects/#{current_project_key}/translations", {list: true, locale: options[:locale], filter: options[:filter]}, {
+           :header => "#{current_project_name} translations:",
+           :index => true,
+           :columns => [:id, {key: 'translation_key.label', width: 50}, {key: 'label', width: 50}, :locale, :rank, :machine, :submitted, :locked, :imported, :ordered, :deleted]
+        })
       end
 
     end

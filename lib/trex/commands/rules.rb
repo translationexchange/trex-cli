@@ -53,7 +53,7 @@ module Trex
 
       desc 'repl', 'starts Repl for Tr8n rules engine'
       def repl
-        lisp = Tr8n::RulesEngine::Evaluator.new
+        lisp = Tml::RulesEngine::Evaluator.new
         sexp = ask '->'
         history = []
 
@@ -77,7 +77,7 @@ module Trex
                 table << ["#{k}: ", v]
               end
               print_table(table)
-              say("No variables found") if table.empty?
+              say('No variables found') if table.empty?
             when '\s'
               table = []
               lisp.env.keys.sort.each do |k|
@@ -85,7 +85,7 @@ module Trex
                 table << [k]
               end
               print_table(table)
-              say("No symbols found") if table.empty?
+              say('No symbols found') if table.empty?
             when '\r'
               table = [["", "expression", "result"]]
               history.each_with_index do |h, i|
@@ -96,7 +96,7 @@ module Trex
             else
               begin
                 if /^\(/.match(sexp)  # (+ 1 2)
-                  p_sexp = Tr8n::RulesEngine::Parser.new(sexp).parse
+                  p_sexp = Tml::RulesEngine::Parser.new(sexp).parse
                 elsif /^\[/.match(sexp) # ["+", 1, 2]
                   p_sexp = JSON.parse(sexp)
                 else
@@ -107,7 +107,7 @@ module Trex
                 history << [sexp, result]
                 p result
               rescue Exception => ex
-                pp "Error: " + ex.message
+                say "Error: #{ex.message}"
               end
           end
 

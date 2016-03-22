@@ -32,34 +32,52 @@
 #++
 
 module Trex
-  module Commands
-    class Translation < Trex::Commands::Base
-      namespace :translation
+  module Scanners
+    class Rails < Trex::Scanners::Base
 
-      map 's' => :submit
-      desc 'submit', 'Adds a translation'
-      method_option :key, :type => :string, :aliases => "-k", :required => false, :banner => "Translation key to be translated", :default => nil
-      method_option :locale, :type => :string, :aliases => "-l", :required => false, :banner => "Language locale for the translation", :default => nil
-      method_option :translation, :type => :string, :aliases => "-t", :required => false, :banner => "Translation of the key", :default => nil
-      def submit
-        key = options[:key] || ask("Translation key hash:")
-        locale = options[:locale] || ask("Language locale:")
-        translation = options[:translation] || ask("Translation:")
-
-        data = http_post('translation/submit', {:key => key, :locale => locale, :translation => translation})
-        return if error?(data)
-
-        say "Your translation has been submitted."
+      def self.pattern
+        /.*\.(erb)/
       end
 
-      map 'd' => :delete
-      desc 'delete TRANSLATION_ID', 'Deletes a translation'
-      def delete(id)
-        data = http_post('translation/delete', {:id => id})
-        return if error?(data)
-
-        say "This translation has been deleted."
+      def expressions
+        [
+            {
+                expression: /<%=\s*tr[l]?\s*[\(]?\s*"([^"]*)"\s*[\)]?\s*%>/,
+                context: false
+            },
+            {
+                expression: /<%=\s*tr[l]?\s*[\(]?\s*'([^']*)'\s*[\)]?\s*%>/,
+                context: false
+            } # ,
+            # {
+            #     expression: /[^.]tr\s*[\(]?\s*"([^"]*)"\s*,\s*["']([^"']*)["']\s*[\)]?/,
+            #     context: true
+            # }
+        ]
       end
+
+      def process
+        # content.match(//)
+
+        strings = []
+
+        expressions.each do |expression|
+          content.scan(expression[:expression]).each do |matches|
+            matches.each do |match|
+              next if match.nil?
+              strings << {
+                  label: match
+              }
+            end
+          end
+        end
+
+
+        # cmd.app
+
+        pp strings
+      end
+
     end
   end
 end

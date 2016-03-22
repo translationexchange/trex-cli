@@ -27,12 +27,14 @@ connections:
     url: DBI:Pg:translations
     username: michael
 
-projects:
-  local:
-    remote: development
-    key:
-    token:
+bookmarks:
+  projects:
 
 current:
-  project: local
-  locale: en
+  remote:  development
+  project:
+    key:
+    name:
+  language:
+    locale: en
+    name:

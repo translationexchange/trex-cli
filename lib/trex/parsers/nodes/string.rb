@@ -33,8 +33,14 @@
 
 module Trex
   module Parsers
-    class Objs < Trex::Parsers::Base
+    module Nodes
+      class String < Trex::Parsers::Nodes::Base
 
+        def to_array
+          eval self.text_value
+        end
+
+      end
     end
   end
 end

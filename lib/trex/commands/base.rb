@@ -36,8 +36,9 @@ require 'pp'
 require 'json'
 require 'thor'
 require 'yaml'
+require 'highline'
 
-CONFIG_PATH = File.join(ENV['HOME'],'.config','trex')
+CONFIG_PATH = File.join(ENV['HOME'], '.config', 'trex')
 
 module Trex
   module Commands
@@ -53,11 +54,79 @@ module Trex
       def config
         @config ||= begin
           unless File.exists?("#{CONFIG_PATH}/config.yml")
+            self.class.source_root(File.join(__dir__, '..', 'templates'))
             FileUtils.mkdir_p(CONFIG_PATH)
-            template('templates/config.yml', "#{CONFIG_PATH}/config.yml")
+            template('config.yml', "#{CONFIG_PATH}/config.yml")
           end
           YAML.load(File.read("#{CONFIG_PATH}/config.yml"))
         end
+      end
+
+      def api(path, params = {}, opts = {})
+        host = opts[:host] || current_remote['api']['host']
+        method = opts[:method] || :get
+
+        params = params.merge(access_token: current_remote['access_token'])
+
+        # pp "#{method} #{host}/#{path}"
+        conn = Faraday.new(:url => host) do |faraday|
+          faraday.request(:url_encoded) # form-encode POST params
+          faraday.adapter(Faraday.default_adapter) # make requests with Net::HTTP
+        end
+
+        if method == :get
+          response = conn.get(path, params)
+        elsif method == :post
+          response = conn.post(path, params)
+        elsif method == :put
+          response = conn.put(path, params)
+        elsif method == :delete
+          response = conn.delete(path, params)
+        else
+          raise "Unsupported API method #{method}"
+        end
+
+        data = response.body
+
+        begin
+          unless data.nil? or data == ''
+            data = JSON.parse(data)
+          end
+        rescue Exception => ex
+          abort("Could not parse API response #{ex.message}")
+        end
+
+        if [402, 403, 500].include?(response.status)
+          if data.is_a?(Hash)
+            if data['msg']
+              abort("Error: #{data['msg']}")
+            elsif data['error']
+              abort("Error: #{data['error']}")
+            end
+          else
+            abort('API Error')
+          end
+        end
+
+        # pp data
+
+        data
+      end
+
+      def get(path, params = {}, opts = {})
+        api(path, params, opts.merge(:method => :get))
+      end
+
+      def post(path, params = {}, opts = {})
+        api(path, params, opts.merge(:method => :post))
+      end
+
+      def put(path, params = {}, opts = {})
+        api(path, params, opts.merge(:method => :put))
+      end
+
+      def delete(path, params = {}, opts = {})
+        api(path, params, opts.merge(:method => :delete))
       end
 
       def update_config
@@ -86,8 +155,40 @@ module Trex
         remotes[current_config['remote']]
       end
 
-      def current_app
-        apps[current_config['project']]
+      def project_selected?
+        !current_config['project'].nil? and !current_config['project']['key'].nil? and !current_config['project']['key'].empty?
+      end
+
+      def ensure_project_selected
+        unless project_selected?
+          abort('Please select a project first')
+        end
+      end
+
+      def current_project_key
+        current_config['project']['key']
+      end
+
+      def current_project_name
+        current_config['project']['name']
+      end
+
+      def source_selected?
+        !current_config['source'].nil? and !current_config['source']['id'].nil?
+      end
+
+      def ensure_source_selected
+        unless source_selected?
+          abort('Please select a project source first')
+        end
+      end
+
+      def current_source_id
+        current_config['source']['id']
+      end
+
+      def current_source_name
+        current_config['source']['source']
       end
 
       def application(opts = {})
@@ -119,7 +220,131 @@ module Trex
         not data['error'].nil?
       end
 
-      def paginate(results, opts = {})
+      def paginate(path, params = {}, opts = {})
+        say
+        say(opts[:header]) if opts[:header]
+        say
+
+        data = get(path, params)
+        results = data['results']
+        pagination = data['pagination']
+
+        if results.nil? or results.size == 0
+          say('None found')
+          return
+        end
+
+        index = 0
+
+        all_results = []
+        while pagination['total_pages'] >= pagination['current_page']
+          opts[:columns] ||= results.first.keys.collect { |k| k.to_sym }
+
+          table = []
+          titles = []
+          unless opts[:skip_title]
+            if opts[:index] or opts[:select]
+              titles << ''
+            end
+
+            opts[:columns].each do |column|
+              width = nil
+              title = column
+              explicit = false
+
+              if column.is_a?(Array)
+                title = column.last
+              elsif column.is_a?(Hash)
+                title = column[:title] || column[:key]
+                width = column[:width]
+                explicit = true
+              end
+
+              title = title.to_s
+
+              unless explicit
+                title = title.split('.').last
+              end
+
+              if width
+                if title.length > width
+                  title = title[0..(width-3)] + '...'
+                else
+                  title += ' ' * (width - title.length)
+                end
+              end
+
+              titles << title
+            end
+            table << titles
+          end
+
+          results.each do |result|
+            row = []
+            if opts[:index] or opts[:select]
+              index += 1
+              row << "  #{index}:  "
+            end
+            opts[:columns].each do |column|
+              key = column
+              width = nil
+
+              if column.is_a?(Array)
+                key = column.first
+              elsif column.is_a?(Hash)
+                key = column[:key]
+                width = column[:width]
+              end
+
+              key = key.to_s.split('.')
+              value = result[key[0]]
+              key[1..-1].each do |sub_key|
+                value = value[sub_key]
+              end
+
+              if width
+                if value.length > width
+                  value = value[0..(width-3)] + '...'
+                else
+                  value += ' ' * (width - value.length)
+                end
+              end
+
+              row << value
+            end
+            all_results << result
+            table << row
+          end
+          print_table(table)
+
+          data = get(path, params.merge(page: pagination['current_page'] + 1))
+          results = data['results']
+          pagination = data['pagination']
+
+          if opts[:select]
+            if pagination['total_pages'] > pagination['current_page']
+              selected_index = ask('Enter the index or press enter to view more results: ')
+            else
+              selected_index = ask('Enter the index:')
+            end
+            say
+            if selected_index.match(/\d+/)
+              return all_results[selected_index.to_i - 1]
+            end
+          else
+            if pagination['total_pages'] >= pagination['current_page']
+              ask("Showing page #{pagination['current_page']-1} of #{pagination['total_pages']}. Press enter to view the next page...")
+              say
+            end
+          end
+        end
+
+        say(opts[:footer]) if opts[:footer]
+        say
+        nil
+      end
+
+      def print_objects(results, opts = {})
         say
         say(opts[:header]) if opts[:header]
         say
@@ -131,17 +356,7 @@ module Trex
 
         opts[:per_page] ||= 50
         opts[:columns]  ||= begin
-          if results.first.is_a?(Tr8n::Base)
-            keys = []
-            results.first.class.attributes.each do |key|
-              value = results.first.attributes[key]
-              next if value.kind_of?(Tr8n::Base) or value.kind_of?(Hash) or value.kind_of?(Array)
-              keys << key
-            end
-            keys
-          else
-            results.first.keys.collect{|k| k.to_sym}
-          end
+          results.first.keys.collect{|k| k.to_sym}
         end
 
         page = 0
@@ -188,11 +403,7 @@ module Trex
                 return
               end
               row << begin
-                if result.is_a?(Tr8n::Base)
-                  result.attributes[key]
-                else
-                  (result[key] || result[key.to_s])
-                end
+                (result[key] || result[key.to_s])
               end
             end
             table << row
@@ -216,7 +427,7 @@ module Trex
         say(opts[:header]) if opts[:header]
         say
 
-        opts[:columns] ||= result.keys.collect{|k| k.to_sym}
+        opts[:columns] ||= result.keys.collect { |k| k.to_sym }
 
         table = []
 
@@ -234,13 +445,23 @@ module Trex
             say('Invalid show call...')
             return
           end
-          table << ["#{title.to_s}: ", (result[key.to_s] || result[key]).to_s]
+          value = result[key.to_s] || result[key]
+          if value.is_a?(Hash)
+            value = value.to_json
+          end
+          table << ["#{title.to_s}: ", value.to_s]
         end
 
         print_table(table)
 
         say(opts[:footer]) if opts[:footer]
         say
+      end
+
+      def ask_for_password(message)
+        HighLine.new.ask(message) do |q|
+          q.echo = false
+        end
       end
 
       def ask_for_number(max, opts = {})
@@ -279,8 +500,9 @@ module Trex
           data = []
           remotes.each do |key, settings|
             data << {
-              'key' => key,
-              'url' => settings['url'],
+                'env' => key,
+                'api' => settings['api']['host'],
+                'gateway' => settings['gateway']['host'],
             }
           end
           data

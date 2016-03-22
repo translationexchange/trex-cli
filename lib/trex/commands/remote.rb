@@ -39,7 +39,8 @@ module Trex
       map 'a' => :add
       desc 'add', 'adds a TrEx service location'
       method_option :name, :type => :string, :aliases => '-n', :required => false, :banner => 'remote name', :default => nil
-      method_option :host, :type => :string, :aliases => '-h', :required => false, :banner => 'host url (starting with http[s]://)', :default => nil
+      method_option :api_host, :type => :string, :aliases => '-a', :required => false, :banner => 'host url (starting with http[s]://)', :default => nil
+      method_option :gateway_host, :type => :string, :aliases => '-g', :required => false, :banner => 'host url (starting with http[s]://)', :default => nil
       def add
         say('Please provide the following information for setting up a TrEx remote host:')
         name = options[:name] || ask('What is the name of this remote? ')
@@ -48,7 +49,8 @@ module Trex
           return unless yes?('This remote already exists, would you like to overwrite it? (Y/n)')
         end
 
-        url = options[:host] || ask('Remote URL (starting with http/s): ')
+        url = options[:api_host] || ask('Remote URL (starting with http/s): ')
+        url = options[:gateway_host] || ask('Remote URL (starting with http/s): ')
         remotes[name] = {
             'url' => url,
         }
@@ -62,10 +64,9 @@ module Trex
       desc 'list', 'lists all configured TrEx services'
       def list
         paginate(remote_list, {
-            :header => 'Tr8n services:',
+            :header => 'TrEx services:',
             :with_numbers => true
         })
-        say("'Default service: #{current_config['remote']}'")
         say
       end
 
@@ -86,6 +87,7 @@ module Trex
         say('The remote has been removed')
         say
       end
+
     end
   end
 end

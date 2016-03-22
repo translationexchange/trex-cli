@@ -36,45 +36,66 @@ module Trex
     class Source < Trex::Commands::Base
       namespace :source
 
-      map 's' => :show
-      desc 'show SOURCE', 'shows application source'
-      def show(source)
-        data = application.get('source/index', :source => source)
-        return if error?(data)
-        print_object(data, :header => "Source details:")
+      map 'l' => :list
+      desc 'list', 'Lists all sources for the current project'
+      method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
+      method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
+      def list
+        ensure_project_selected
+
+        paginate("v1/projects/#{current_project_key}/sources", {search: options[:search], per_page: options[:per_page]}, {
+          :header => "#{current_project_name} sources:",
+          :index => true,
+          :columns => [:id, :key, :type, :source, :state, :created_at, :updated_at]
+        })
       end
 
-      map 'r' => :register
-      desc 'register SOURCE', 'registers application source (admins only)'
-      def register(source)
-        data = application.post('source/register', :source => source)
-        return if error?(data)
-        print_object(data, :header => "Source details:")
+      map 's' => :select
+      desc 'select', 'Makes the source current'
+      method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
+      method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
+      def select
+        source = paginate("v1/projects/#{current_project_key}/sources", {search: options[:search], per_page: options[:per_page]}, {
+           :header => "#{current_project_name} sources:",
+           :select => true,
+           :columns => [:id, :key, :type, :source, :state, :created_at, :updated_at]
+        })
+        say
+
+        unless source
+          abort('No sources found')
+        end
+
+        current_config['source'] = {
+            'id' => source['id'],
+            'key' => source['key'],
+            'source' => source['source'],
+            'project' => current_config['project']['key'],
+            'remote' => current_config['remote']
+        }
+        update_config
+
+        say
+        say("You are now working on #{current_config['source']['source']} under #{current_config['project']['name']}")
+        say
       end
 
-      map 'k' => :keys
-      desc 'keys SOURCE', 'finds all keys used in a source'
-      def keys(source)
-        data = application.get('source/translation_keys', :source => source)
-        return if error?(data)
-        paginate(data["results"], :header => "Source keys:")
+      map 'c' => :current
+      desc 'current', 'Displays the current project'
+      def current
+        ensure_source_selected
+        print_object(get("v1/sources/#{current_source_id}"),
+           header: "#{current_project_name} source #{current_source_name}:",
+           columns: [:id, :type, :key, :source, :key_count, :created_at, :updated_at]
+        )
       end
 
-      map 'r' => :reset
-      desc 'reset SOURCE', 'disassociates all keys from the source. Load the page again to reassociate valid keys back.'
-      def reset(source)
-        data = application.post('source/reset', :source => source)
-        return if error?(data)
-        say("The source has been reset")
-      end
+      desc 'translation_key SUBCOMMAND ...ARGS', 'Source translation key commands'
+      subcommand 'translation_key', Trex::Commands::SourceTranslationKey
 
-      map 'd' => :delete
-      desc 'delete SOURCE', 'deletes source.'
-      def delete(source)
-        data = application.post('source/delete', :source => source)
-        return if error?(data)
-        say("The source has been deleted")
-      end
+      desc 'translation SUBCOMMAND ...ARGS', 'Source translation commands'
+      subcommand 'translation', Trex::Commands::SourceTranslation
+
     end
   end
 end
