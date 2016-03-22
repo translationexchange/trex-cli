@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 if (process.argv.length <= 2) {
   console.log("Usage: " + __filename + " grammar.ohm source.m");
   process.exit(-1);
