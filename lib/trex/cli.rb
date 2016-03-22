@@ -33,13 +33,7 @@
 
 module Trex
   class Cli < Trex::Commands::Base
-
-    class << self
-      def source_root
-        File.expand_path('../../',__FILE__)
-      end
-    end
-
+    
     desc 'login', 'Authorizes user with a remote service'
     def login
       say('Which server would you like to authorize?')
