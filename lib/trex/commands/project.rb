@@ -127,13 +127,7 @@ module Trex
       method_option :path, :type => :string, :aliases => '-p', :required => true, :banner => 'Path where to start scanning for tr method references', :default => nil
       def import
         ensure_project_selected
-        # Scanners::Base.scan(self, options[:path])
-
-        Trex::Parsers::Rails.parse('tr "Hello World"')
-        Trex::Parsers::Rails.parse('trl "Hello World"')
-        Trex::Parsers::Rails.parse('trl("Hello World")')
-        Trex::Parsers::Rails.parse("tr('Hello World')")
-        Trex::Parsers::Rails.parse('trl "Hello World", "A message" ')
+        Scanners::Base.scan(self, options[:path])
       end
 
       desc 'translator SUBCOMMAND ...ARGS', 'Project translator commands'

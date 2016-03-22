@@ -54,8 +54,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'faraday',           '~> 0.9'
   gem.add_dependency 'tml',               '~> 5.4'
   gem.add_dependency 'treetop',           '~> 1.4'
-  gem.add_dependency 'dbi',               '~> 0.4'
-  gem.add_dependency 'dbd-pg',            '~> 0.3'
-  gem.add_dependency 'pg',                '~> 0.18'
   gem.add_dependency 'activesupport',     '~> 4.2'
 end
