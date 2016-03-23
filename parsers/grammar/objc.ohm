@@ -98,15 +98,24 @@ ArrayEntryExp
   = ArgsExp
 
 
-// Message
 MessageExp
-  = "[" #(messageComponentChar+) (ArgumentMessageExp | NoArgumentMessageExp) "]"
+  = NoArgumentMessageExp
+  | ArgumentMessageExp
+  
+Receiver
+  = #(messageComponentChar+)
+  
+NoArgumentMessage
+  = #(messageComponentChar+)
+  
+ArgumentMessage
+  = #(messageComponentChar+) ":"
 
 NoArgumentMessageExp
-  = messageComponentChar+
+  = "[" Receiver NoArgumentMessage "]"
 
 ArgumentMessageExp
-  = messageComponentChar+ ":" ArgsExp
+  = "[" Receiver (ArgumentMessage ArgsExp)+ "]"
 
 MessageComponent
   = messageComponentChar+

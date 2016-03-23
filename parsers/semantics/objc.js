@@ -107,13 +107,13 @@ module.exports = {
       "ArrayEntryExp": function(e) {
         return e.localizableStrings();
       },
-      "MessageExp": function(open, receiver, argExp, close) {
+      "MessageExp": function(msg) {
         return "";
       },
-      "NoArgumentMessageExp": function(parts) {
+      "NoArgumentMessageExp": function(ope, receiver, message, close) {
         return "";
       },
-      "ArgumentMessageExp": function(messageName, _, args) {
+      "ArgumentMessageExp": function(open, receiver, messages, args, close) {
         return "";
       },
       "MessageComponent": function(parts) {
