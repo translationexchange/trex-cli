@@ -8,18 +8,34 @@ var program = require('commander');
 program
   .version('0.0.1')
   .option('-h, --help', 'Shows help')
-  .option('-l, --language', 'Input language')
-  .option('-p, --print-supported-languages', 'Print out supported input languages')
-  .option('-o, --output-directory', 'Output directory');
+  .option('-l, --language <lang>', 'Input language')
+  .option('-i, --list-languages', 'Print out supported input languages')
+  .option('-o, --output-file <file>', 'Write output to file instead of stdout');
 
 program
   .arguments("<file> [file...]");
 
 program.parse(process.argv);
 
-var files = program.args;
+var opts = program.opts();
+
+// If asked, print out suppoerted languages and exit
+var ExtensionLanguageMap = {
+  "m": "objc"
+};
+
+if (opts.listLanguages) {
+  var map = ExtensionLanguageMap;
+  var langs = [];
+  for (var ext in map) {
+    langs.push(map[ext]);
+  }
+  console.log("Supported languages: " + langs.join(", "));  
+  process.exit(-1);
+}
 
 // Sanity checks
+var files = program.args;
 if (!files || files.length == 0) {
   program.outputHelp();
 }
@@ -36,7 +52,7 @@ var ohm = require('ohm-js');
 function testIfFileExists(filePath) {
   var exists = false;
   try {
-      var stat = fs.lstatSync(filePath);
+      var stat = fs.statSync(filePath);
       if (stat && stat.isFile()) {
         exists = true;
       }
@@ -49,7 +65,7 @@ function testIfFileExists(filePath) {
 function testIfDirectoryExists(dir) {
   var exists = false;
   try {
-      var stat = fs.lstatSync(dir);
+      var stat = fs.statSync(dir);
       if (stat && stat.isDirectory()) {
         exists = true;
       }
@@ -63,9 +79,6 @@ function testIfDirectoryExists(dir) {
 /**
  * Language detection
  */
-var ExtensionLanguageMap = {
-  "m": "objc"
-};
 function languageForFileAtPath(filePath) {
   var extension = path.extname(filePath).substring(1);
   return ExtensionLanguageMap[extension];
@@ -144,17 +157,30 @@ function parseFile(file, lang) {
   var localizableStrings = matchSemantics.localizableStrings();
   
   console.warn("> " + file);
-  console.dir(localizableStrings);
+  
+  return localizableStrings;
 }
 
-function main() {
-  var opts = program.opts();
-  
-  if (opts.outputDirectory) {
-    if (!testIfDirectoryExists(opts.outputDirectory)) {
-      fs.mkdirSync(opts.outputDirectory);
+function main() {  
+  var outputFile = opts.outputFile;
+  var writeStream = null;
+  if (outputFile) {
+    var outDir = path.dirname(outputFile);
+    if (!testIfDirectoryExists(outDir)) {
+      console.log("!!!" + outDir + " Doesn't exist");
+      fs.mkdirSync(outDir);
     }
+    
+    writeStream = fs.createWriteStream(outputFile, {
+      'flags': 'w',
+      'defaultEncoding': 'utf8'
+    });
   }
+  else {
+    writeStream = process.stdout;
+  }
+
+  writeStream.write("[");
   
   for (var i=0; i<files.length; i++) {
     var file = files[i];
@@ -174,7 +200,22 @@ function main() {
       continue;
     }
     
-    parseFile(file, lang);
+    var localizableStrings = parseFile(file, lang);
+    var str = JSON.stringify(localizableStrings);
+    if (str.length > 2) {
+      str = str.substring(1, str.length - 1);
+    }
+    writeStream.cork();
+    writeStream.write(str);
+    if (i<files.length-1) {
+      writeStream.write(",");
+    }
+    writeStream.uncork();
+  }
+  
+  writeStream.write("]");
+  if (writeStream !== process.stdout) {    
+    writeStream.end();
   }
 }
 
