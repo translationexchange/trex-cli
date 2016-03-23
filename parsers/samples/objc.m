@@ -102,7 +102,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", 
 nil);
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
-  @"with multiple lines, using '@'", nil
+  @"with multiple lines, using '@'", nil,
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -189,7 +189,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", 
 NULL);
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
-  @"with multiple lines, using '@'", NULL
+  @"with multiple lines, using '@'", NULL,
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -276,7 +276,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", 
 DEFINED_MACRO);
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
-  @"with multiple lines, using '@'", DEFINED_MACRO
+  @"with multiple lines, using '@'", DEFINED_MACRO,
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -561,7 +561,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
 @"message": [self noarg],
 @"longerMessage": [self get:@"foo" with:nil with:[self arg]],
 @"NSNull": [NSNull null]
-}
+},
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -794,7 +794,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", @[
 @"foo", @3, [NSNull null], @{@"foo": @"Foo"}, [self some:@"Like" it:@"Hot"], @[@"Nested", @"Array"]
-]
+],
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -901,7 +901,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", 
 [self noarg]);
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
-  @"with multiple lines, using '@'", [self noarg]
+  @"with multiple lines, using '@'", [self noarg],
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
@@ -988,7 +988,7 @@ TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
   @"with multiple lines, using '@'", 
 [self foo:@"Foo" bar: @3     baz: 4  dict: @{@"foo": "Foo"} array: @[@"Foo"] msg:[self noarg] long:[self foo:@"Foo" bar: @"Bar"] n:nil nn:[NSNull null] inArray:arg[0] inDict: dict[@"foo"]]);
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
-  @"with multiple lines, using '@'", [self foo:@"Foo" bar: @3     baz: 4  dict: @{@"foo": "Foo"} array: @[@"Foo"] msg:[self noarg] long:[self foo:@"Foo" bar: @"Bar"] n:nil nn:[NSNull null] inArray:arg[0] inDict: dict[@"foo"]]
+  @"with multiple lines, using '@'", [self foo:@"Foo" bar: @3     baz: 4  dict: @{@"foo": "Foo"} array: @[@"Foo"] msg:[self noarg] long:[self foo:@"Foo" bar: @"Bar"] n:nil nn:[NSNull null] inArray:arg[0] inDict: dict[@"foo"]],
 @"\"Second\" 'argument' of two,"
   @"with multiple lines, using '@'");
 TMLLocalizedString(@"TMLLocalizedString \"first\" 'argument' of two,"
