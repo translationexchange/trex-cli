@@ -44,52 +44,29 @@ module Trex
         paginate('v1/users/me/projects', {search: options[:search], per_page: options[:per_page]}, {
            :header => "Projects from #{current_config['remote']}:",
            :index => true,
-           :columns => [:id, :type, :key, :name, :description, :published_state, :default_locale]
+           :columns => [:id, :type, :key, :permalink, :name, :description, :published_state, :default_locale]
         })
         say
       end
 
-      # map 'a' => :add
-      # desc 'add', 'adds a project'
-      # method_option :name, :type => :string, :aliases => "-n", :required => false, :banner => "application configuration name (for reference)", :default => nil
-      # method_option :remote, :type => :string, :aliases => "-r", :required => false, :banner => "remote name", :default => nil
-      # method_option :key, :type => :string, :aliases => "-k", :required => false, :banner => "application remote key", :default => nil
-      # method_option :secret, :type => :string, :aliases => "-s", :required => false, :banner => "application remote secret", :default => nil
-      # def add
-      #   say('Please provide the following information to add a new application configuration:')
-      #   name = options[:name] || ask('What is the name of this application configuration? ')
-      #
-      #   remote = options[:remote] || begin
-      #     say('Where is the application running? ')
-      #     paginate(remote_list, {
-      #         :header => "Tr8n services:",
-      #         :with_numbers => true
-      #     })
-      #     value = ask_for_number(remote_list.size)
-      #     remote_list[value-1]['key']
-      #   end
-      #
-      #   client_id = options[:key] || ask('Project key: ')
-      #
-      #   say('Authorizing application...')
-      #   app = Tml::Application.new(host: remotes[remote]['url'], key: client_id, secret: client_secret)
-      #   app.fetch
-      #
-      #   apps[name] = {
-      #       "remote" => remote,
-      #       "key" => client_id,
-      #       "name" => app.name,
-      #       "access_token" => app.access_token
-      #   }
-      #
-      #   if yes?("Would you like to set it as the default application? (Y/n)")
-      #     current_config["app"] = name
-      #   end
-      #
-      #   update_config
-      #
-      #   say("Configuration has been updated")
-      # end
+      map 'a' => :add
+      desc 'add', 'Adds a new project'
+      method_option :type, :type => :string, :aliases => '-t', :required => false, :banner => 'project type', :default => 'web'
+      method_option :name, :type => :string, :aliases => '-n', :required => true, :banner => 'project name', :default => nil
+      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'default locale', :default => 'en'
+      method_option :url, :type => :string, :aliases => '-u', :required => false, :banner => 'default locale', :default => nil
+      def add
+        name = options[:name] || ask('What is the name of this new project? ')
+
+        data = post('v1/projects', {name: name, type: options[:type], url: options[:url]})
+
+        current_config['project'] = {'key' => data['key'], 'name' => data['name'], 'remote' => current_config['remote']}
+        update_config
+
+        say
+        say("You are now working on #{current_config['project']['name']}")
+        say
+      end
 
       map 's' => :select
       desc 'select', 'Makes the project current'
@@ -99,7 +76,7 @@ module Trex
         project = paginate('v1/users/me/projects', {search: options[:search], per_page: options[:per_page]}, {
            :header => "Projects from #{current_config['remote']}:",
            :select => true,
-           :columns => [:id, :type, :key, :name, :description, :published_state, :default_locale],
+           :columns => [:id, :type, :key, :permalink, :name, :description, :published_state, :default_locale],
         })
         say
 
@@ -149,6 +126,9 @@ module Trex
 
       desc 'request SUBCOMMAND ...ARGS', 'Project request commands'
       subcommand 'request', Trex::Commands::Request
+
+      desc 'order SUBCOMMAND ...ARGS', 'Project order commands'
+      subcommand 'order', Trex::Commands::Order
 
     end
   end
