@@ -20,6 +20,7 @@ module.exports = {
       "Exp": function(_, parts, tail) {
         var result = parts.localizableStrings();
         var newResult = [];
+        debugger;
         for (var i=0; i<result.length; i++) {
           var r = result[i];
           if (r instanceof Array) {
@@ -43,6 +44,9 @@ module.exports = {
         var argResult = args.localizableStrings();
         if (argResult && argResult.length > 0) {
           var argStr = argResult[0];
+          if (argStr instanceof Array) {
+            argStr = argStr[0];
+          }
           if (argStr) {
             results.push(argStr);
           }
@@ -51,6 +55,7 @@ module.exports = {
         if (results.length > 1) {
           info["comment"] = results[1];
         }
+        debugger;
         return info;
       },
       "Macro": function(e) {
