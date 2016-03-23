@@ -35,26 +35,33 @@ module Trex
   class Cli < Trex::Commands::Base
 
     desc 'login', 'Authorizes user with a remote service'
+    method_option :env, :type => :string, :aliases => '-h', :required => false, :banner => 'environment', :default => nil
+    method_option :email, :type => :string, :aliases => '-e', :required => false, :banner => 'email', :default => nil
+    method_option :password, :type => :string, :aliases => '-p', :required => false, :banner => 'password', :default => nil
     def login
-      say('Which server would you like to authorize?')
-      print_objects(remote_list, {
-          :header => 'TrEx Environments:',
-          :with_numbers => true
-      })
-      value = ask_for_number(remote_list.size)
-      remote = remote_list[value-1]
-
-      email = ask('Enter your email: ')
-      password = ask_for_password('Enter your password: ')
-
-      data = post('authorize', {email: email, password: password}, {host: remote['gateway']})
-
-      if data['status']['code'] != 0
-        say data['status']['msg']
+      env = options[:env] || begin
+        say('Which host would you like to authorize?')
+        print_objects(remote_list, {
+            :header => 'TrEx Environments:',
+            :with_numbers => true
+        })
+        value = ask_for_number(remote_list.size)
+        remote_list[value-1]['env']
       end
 
-      remotes[remote['env']]['access_token'] = data['results']['access_token']
-      current_config['remote'] = remote['env']
+      remote = remotes[env]
+
+      email = options[:email] || ask('Enter your email: ')
+      password = options[:password] || ask_for_password('Enter your password: ')
+
+      data = post('authorize', {email: email, password: password}, {host: remote['gateway']['host']})
+
+      if data['status']['code'] != 0
+        abort(data['status']['msg'])
+      end
+
+      remotes[env]['access_token'] = data['results']['access_token']
+      current_config['remote'] = env
       update_config
 
       whoami

@@ -43,7 +43,7 @@ end
     trex/commands/project_translator.rb trex/commands/project_language.rb
     trex/commands/project_translation_key.rb trex/commands/project_translation.rb
     trex/commands/source_translation_key.rb trex/commands/source_translation.rb
-    trex/commands/request.rb trex/commands/source.rb
+    trex/commands/request.rb trex/commands/source.rb trex/commands/order.rb
     trex/commands
     trex/tasks/base.rb
     trex/tasks trex/cli.rb
