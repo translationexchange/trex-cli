@@ -21,14 +21,25 @@ module.exports = {
         var result = parts.localizableStrings().pop();
         return result;
       },
-      "TMLExp": function(macro, open, args, close, space, semicolon) {
-        var result = args.localizableStrings();
-        if (result.length === 0) {
+      "TMLExp": function(macro, open, label, sep, args, close, space, semicolon) {
+        var results = [];
+        var labelString = label.localizableStrings();
+        if (labelString.length > 0) {
+          results.push(labelString);
+        }
+        else {
           return null;
         }
-        var info = {"label": result[0]};
-        if (result.length > 1) {
-          info["comment"] = result[1];
+        var argResult = args.localizableStrings();
+        if (argResult && argResult.length > 0) {
+          var argStr = argResult[0];
+          if (argStr) {
+            results.push(argStr);
+          }
+        }
+        var info = {"label": results[0]};
+        if (results.length > 1) {
+          info["comment"] = results[1];
         }
         return info;
       },
