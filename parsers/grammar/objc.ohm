@@ -15,16 +15,23 @@ Macro
 
 // TMLLocalized argument expression
 ArgsExp
-  = NullExp | LiteralExp | ObjectExp | MessageExp | VariableExp
+  = NullExp | LiteralExp | ObjectExp | MessageExp | ArrayAccessExp | DictAccessExp | VariableExp
 
 
 // Null Expression
 NullExp
   = "nil"
   | "NULL"
-  
+
+// Variable Expressions  
 VariableExp
   = (alnum|"_"|"-")+
+  
+ArrayAccessExp
+  = VariableExp "[" ArgsExp "]"
+
+DictAccessExp
+  = VariableExp "{" ArgsExp "]"
 
 // Literal Objects
 LiteralExp
