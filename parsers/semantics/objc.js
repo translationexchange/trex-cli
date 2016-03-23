@@ -107,6 +107,9 @@ module.exports = {
       "ArrayEntryExp": function(e) {
         return e.localizableStrings();
       },
+      "ArrayAccessExp": function(varname, open, arg, close) {
+        return "";
+      },
       "MessageExp": function(msg) {
         return "";
       },
