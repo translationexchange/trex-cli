@@ -42,7 +42,8 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "ohm-js": "~0.9"
+    "ohm-js": "~0.9",
+    "commander": "~2.9.0"
   },
   "devDependencies": {
   }

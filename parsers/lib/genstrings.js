@@ -1,194 +1,181 @@
 #!/usr/bin/env node
 
-if (process.argv.length <= 2) {
-  console.log("Usage: " + __filename + " grammar.ohm source.m");
-  process.exit(-1);
+/**
+ * Program options and arguments
+ */
+var program = require('commander');
+
+program
+  .version('0.0.1')
+  .option('-h, --help', 'Shows help')
+  .option('-l, --language', 'Input language')
+  .option('-p, --print-supported-languages', 'Print out supported input languages')
+  .option('-o, --output-directory', 'Output directory');
+
+program
+  .arguments("<file> [file...]");
+
+program.parse(process.argv);
+
+var files = program.args;
+
+// Sanity checks
+if (!files || files.length == 0) {
+  program.outputHelp();
 }
+
 
 var fs = require('fs');
+var path = require('path');
 var ohm = require('ohm-js');
 
-var grammarFile = process.argv[2];
-var sourceFile = process.argv[3];
 
-function croak(message) {
-  console.error("ERROR: " + message);
-  process.exit(-1);
-}
-
-try {
-    var stat = fs.lstatSync(grammarFile);
-    if (!stat || !stat.isFile()) {
-      croak("No such file: " + grammarFile);
-    }
-    stat = fs.lstatSync(sourceFile);
-    if (!stat || !stat.isFile()) {
-      croak("No such file: " + sourceFile);
-    }
-}
-catch (e) {
-  croak("Error: " + e);
-}
-
-var grammarText = fs.readFileSync(grammarFile, 'utf8');
-var sourceText = fs.readFileSync(sourceFile, 'utf8');
-
-var grammar = ohm.grammar(grammarText);
-var startTime = Date.now();
-var match = grammar.match(sourceText);
-var endTime = Date.now();
-
-console.info("Parsing took " + (endTime - startTime) + "ms");
-
-if (!match.succeeded()) {
-  croak("Did not match any localizable strings");
-}
-
-var semantics = grammar.semantics();
-
-var results = [];
-
-semantics.addOperation("localizableStrings", {
-  // "NonemptyListOf": function(first, separator, iter) {
-  //   console.log("NonemptyListOf");
-  //   console.dir(arguments);
-  //   var result = [];
-  //   var firstString = first.localizableStrings();
-  //   if (firstString) {
-  //     result.push(firstString);
-  //   }
-  //   var children = iter.children;
-  //   for (var i=0; i<children.length; i++) {
-  //     var child = children[i];
-  //     var childString = child.localizableStrings();
-  //     if (childString) {
-  //       result.push(childString);
-  //     }
-  //   }
-  //   return result;
-  //   // return parts.localizableStrings();
-  // },
-  "ListOf_some": function(first, separator, iter) {
-    var result = [];
-    var firstString = first.localizableStrings();
-    if (firstString) {
-      result.push(firstString);
-    }
-    var children = iter.children;
-    for (var i=0; i<children.length; i++) {
-      var child = children[i];
-      var childString = child.localizableStrings();
-      if (childString) {
-        result.push(childString);
+/**
+ * FS helpers
+ */
+function testIfFileExists(filePath) {
+  var exists = false;
+  try {
+      var stat = fs.lstatSync(filePath);
+      if (stat && stat.isFile()) {
+        exists = true;
       }
-    }
-    return result;
-    // return parts.localizableStrings();
-  },
-  "Exp": function(_, parts, tail) {
-    return parts.localizableStrings();
-  },
-  "TMLExp": function(macro, open, args, close, space, semicolon) {
-    var result = args.localizableStrings();
-    results.push(result);
-    return result;
-  },
-  "Macro": function(e) {
-    return "";
-  },
-  "ArgsExp": function(e) {
-    return e.localizableStrings();
-  },
-  "NullExp": function(e) {
-    return "";
-  },
-  "VariableExp": function(parts) {
-    return "";
-  },
-  "LiteralExp": function(e) {
-    console.log("LiteralExp");
-    console.dir(arguments);
-    return e.localizableStrings();
-  },
-  "ObjectExp": function(e) {
-    return e.localizableStrings();
-  },
-  "NumberExp": function(parts) {
-    return "";
-  },
-  "NumberObjectExp": function(_, num) {
-    return "";
-  },
-  "StringObjectExp": function(open, str, close, additionalLines) {
-    var result = str.localizableStrings();
-    if (additionalLines && additionalLines.interval.contents.length > 0) {
-      var additionalString = additionalLines.localizableStrings();
-      if (additionalString) {        
-        result += "\n" + additionalString;
-      }
-    }
-    return result;
-  },
-  "StringObjectAdditionalLinesExp": function(open, str, close) {
-    var result = str.localizableStrings();
-    if (result instanceof Array) {
-      result = result.join("");
-    }
-    return result;
-  },
-  "StringExp": function(open, str, close) {
-    return str.localizableStrings();
-  },
-  "stringCharsExp": function(parts) {
-    var str = parts.localizableStrings().join("");
-    return str;
-  },
-  "stringChar": function(char) {
-    return this.interval.contents;
-  },
-  "BeginStringQuote": function(e) {
-    return "";
-  },
-  "BeginSecondLineStringQuote": function(e) {
-    return "";
-  },
-  "EndStringQuote": function(e) {
-    return "";
-  },
-  "DictExp": function(open, parts, close) {
-    return "";
-  },
-  "DictEntryExp": function(key, _, val) {
-    return "";
-  },
-  "DictValueExp": function(e) {
-    return e.localizableStrings();
-  },
-  "ArrayExp": function(open, parts, close) {
-    return "";
-  },
-  "ArrayEntryExp": function(e) {
-    return e.localizableStrings();
-  },
-  "MessageExp": function(open, receiver, argExp, close) {
-    return "";
-  },
-  "NoArgumentMessageExp": function(parts) {
-    return "";
-  },
-  "ArgumentMessageExp": function(messageName, _, args) {
-    return "";
-  },
-  "MessageComponent": function(parts) {
-    return "";
-  },
-  "messageComponentChar": function(e) {
-    return "";
+      
   }
-});
+  catch (e) {
+  }
+  return exists;
+}
+function testIfDirectoryExists(dir) {
+  var exists = false;
+  try {
+      var stat = fs.lstatSync(dir);
+      if (stat && stat.isDirectory()) {
+        exists = true;
+      }
+      
+  }
+  catch (e) {
+  }
+  return exists;
+}
 
-var matchSemantics = semantics(match);
-matchSemantics.localizableStrings();
+/**
+ * Language detection
+ */
+var ExtensionLanguageMap = {
+  "m": "objc"
+};
+function languageForFileAtPath(filePath) {
+  var extension = path.extname(filePath).substring(1);
+  return ExtensionLanguageMap[extension];
+}
 
-console.log("Results:");
-console.dir(results);
+/**
+ * Grammar
+ */
+var KnownGrammars = {};
+function grammarFilePathForLanguage(lang) {
+  var ourPath = path.dirname(process.argv[1]);
+  return ourPath + "/../grammar/" + lang + ".ohm";
+}
+function grammarForLanguage(lang) {
+  var grammar = KnownGrammars[lang];
+  if (!grammar) {
+    var grammarFilePath = grammarFilePathForLanguage(lang);
+    var grammarText = fs.readFileSync(grammarFilePath, 'utf8');
+    grammar = ohm.grammar(grammarText);
+    KnownGrammars[lang] = grammar;
+  }
+  return grammar;
+}
+
+/**
+ * Semantics
+ */
+function semanticsFilePathForLanguage(lang) {
+  var ourPath = path.dirname(process.argv[1]);
+  return ourPath + "/../semantics/" + lang + ".js";
+}
+function getSemanticsDataForLanguage(lang) {
+  var semanticsFilePath = semanticsFilePathForLanguage(lang);
+  var description = require(semanticsFilePath);
+  return description;
+}
+function loadSemanticsData(semantics, data) {
+  var operations = data["operations"];
+  if (operations) {
+    for (var operationName in operations) {
+      semantics.addOperation(operationName, operations[operationName]);
+    }
+  }
+  var attributes = data["attributes"];
+  if (attributes) {
+    for (var attrName in attributes) {
+      semantics.addAttribute(attrName, attributes[attrName]);
+    }
+  }
+}
+
+/**
+ * Parsing
+ */
+function parseFile(file, lang) {
+  console.info("< ["+lang+"] " + file);
+  var grammar = grammarForLanguage(lang);
+  var source = fs.readFileSync(file, 'utf8');
+  
+  var startTime = Date.now();
+  var match = grammar.match(source);
+  var endTime = Date.now();
+  
+  if (match.succeeded()) {
+    console.info("[OK] Parsed " + file + " in " + (endTime - startTime) + "ms");
+  }
+  else {
+    console.error("!!! Error parsing file: " + file);
+    return;
+  }
+  
+  var semanticData = getSemanticsDataForLanguage(lang);
+  var semantics = grammar.semantics();
+  loadSemanticsData(semantics, semanticData);
+  var matchSemantics = semantics(match);
+  var localizableStrings = matchSemantics.localizableStrings();
+  
+  console.log("> " + file);
+  console.dir(localizableStrings);
+}
+
+function main() {
+  var opts = program.opts();
+  
+  if (opts.outputDirectory) {
+    if (!testIfDirectoryExists(opts.outputDirectory)) {
+      fs.mkdirSync(opts.outputDirectory);
+    }
+  }
+  
+  for (var i=0; i<files.length; i++) {
+    var file = files[i];
+    
+    if (!testIfFileExists(file)) {
+      console.warn("Cannot find file: " + file);
+      continue;
+    }
+    
+    var lang = opts["language"];
+    if (!lang) {
+      lang = languageForFileAtPath(file);
+    }
+    
+    if (!lang) {
+      console.warn("Could not determine source language");
+      continue;
+    }
+    
+    parseFile(file, lang);
+  }
+}
+
+main();
