@@ -1,6 +1,7 @@
 TML {
 Exp
   = ((~TMLExp any)* TMLExp+)+ ~TMLExp any*
+  
 
 // TMLLocalizedString* expression
 TMLExp
@@ -23,15 +24,17 @@ NullExp
   = "nil"
   | "NULL"
 
-// Variable Expressions  
-VariableExp
-  = (alnum|"_"|"-")+
-  
 ArrayAccessExp
   = VariableExp "[" ArgsExp "]"
-
+  
 DictAccessExp
   = VariableExp "{" ArgsExp "]"
+
+VariableExp
+  = #(validVarChar+)
+  
+validVarChar
+  = ~("["|"]"|":"|","|")"|"("|space) any
 
 // Literal Objects
 LiteralExp
@@ -43,6 +46,11 @@ ObjectExp
   | NumberObjectExp
   | DictExp
   | ArrayExp
+  | LiteralWrapExp
+  
+// Literal Wrap @(WHATEVER)
+LiteralWrapExp
+  = "@(" VariableExp ")"
   
 
 // Numbers
@@ -98,6 +106,7 @@ ArrayEntryExp
   = ArgsExp
 
 
+// Message
 MessageExp
   = NoArgumentMessageExp
   | ArgumentMessageExp
