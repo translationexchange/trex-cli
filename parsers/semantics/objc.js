@@ -18,8 +18,18 @@ module.exports = {
         return result;
       },
       "Exp": function(_, parts, tail) {
-        var result = parts.localizableStrings().pop();
-        return result;
+        var result = parts.localizableStrings();
+        var newResult = [];
+        for (var i=0; i<result.length; i++) {
+          var r = result[i];
+          if (r instanceof Array) {
+            newResult = newResult.concat(r);
+          }
+          else {
+            newResult.push(r);
+          }
+        }
+        return newResult;
       },
       "TMLExp": function(macro, open, label, sep, args, close, space, semicolon) {
         var results = [];
