@@ -121,7 +121,7 @@ function loadSemanticsData(semantics, data) {
  * Parsing
  */
 function parseFile(file, lang) {
-  console.info("< ["+lang+"] " + file);
+  console.warn("< ["+lang+"] " + file);
   var grammar = grammarForLanguage(lang);
   var source = fs.readFileSync(file, 'utf8');
   
@@ -130,10 +130,10 @@ function parseFile(file, lang) {
   var endTime = Date.now();
   
   if (match.succeeded()) {
-    console.info("[OK] Parsed " + file + " in " + (endTime - startTime) + "ms");
+    console.warn("[OK] Parsed " + file + " in " + (endTime - startTime) + "ms");
   }
   else {
-    console.error("!!! Error parsing file: " + file);
+    console.warn("!!! Error parsing file: " + file);
     return;
   }
   
@@ -143,7 +143,7 @@ function parseFile(file, lang) {
   var matchSemantics = semantics(match);
   var localizableStrings = matchSemantics.localizableStrings();
   
-  console.log("> " + file);
+  console.warn("> " + file);
   console.dir(localizableStrings);
 }
 
