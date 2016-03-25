@@ -36,11 +36,11 @@ module Trex
     class Objc < Trex::Extractors::Base
 
       def self.pattern
-        /.*\.(c)/
+        /.*\.(m)/
       end
 
       def process
-        output = Trex::Parsers::Objs.parse(content)
+        output = Trex::Parsers::Objc.parse(content)
         pp output
         write_keys(output)
       end
