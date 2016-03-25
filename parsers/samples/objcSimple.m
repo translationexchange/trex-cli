@@ -1,0 +1,1 @@
+TMLLocalizedString(@"Simple String");
