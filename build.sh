@@ -1,2 +1,2 @@
 gem build trex-cli.gemspec
-gem install trex-cli-1.0.0.gem --no-ri --no-rdoc
+gem install trex-cli-0.0.1.gem --no-ri --no-rdoc

@@ -40,7 +40,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ['Michael Berkovich']
   gem.email         = ['michael@translationexchange.com']
   gem.description   = %q{Translation Exchange CLI}
-  gem.summary       = %q{Command line interface tools for translation exchange platform}
+  gem.summary       = %q{Command line interface tools for Translation Exchange platform}
   gem.homepage      = 'https://github.com/translationexchange/trex-cli'
 
   gem.files = Dir['{lib}/**/*'] + %w(MIT-LICENSE Rakefile README.md)
