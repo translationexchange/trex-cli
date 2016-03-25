@@ -37,16 +37,17 @@ require File.expand_path('../lib/trex/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.name          = 'trex-cli'
   gem.version       = Trex::VERSION
+  gem.platform      = Gem::Platform::RUBY
   gem.authors       = ['Michael Berkovich']
   gem.email         = ['michael@translationexchange.com']
   gem.description   = %q{Translation Exchange CLI}
   gem.summary       = %q{Command line interface tools for Translation Exchange platform}
   gem.homepage      = 'https://github.com/translationexchange/trex-cli'
+  gem.licenses      = 'MIT-LICENSE'
 
-  gem.files = Dir['{lib}/**/*'] + %w(MIT-LICENSE Rakefile README.md)
-  gem.test_files = Dir['test/**/*']
-  gem.licenses = 'MIT-LICENSE'
+  gem.files         = Dir['{bin,lib}/**/*'] + %w(MIT-LICENSE Rakefile README.md)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.test_files    = Dir['spec/**/*']
   gem.require_paths = ['lib']
 
   gem.add_dependency 'thor',              '~> 0.19'
