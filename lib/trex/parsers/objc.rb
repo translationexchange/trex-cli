@@ -2,6 +2,7 @@ module Trex
   module Parsers
     class Objc < Trex::Parsers::Base
 
+      Treetop.load(grammar_path('base.treetop'))
       Treetop.load(grammar_path('objc.treetop'))
       @@objc_parser = ObjcParser.new
 
