@@ -1,23 +1,154 @@
 grammar Objc
+    include Base
 
-  rule invocation
-    space? method '(' params ')' space? <Trex::Parsers::Nodes::Invocation> / space? method params <Trex::Parsers::Nodes::Invocation>
-  end
+    rule invocation
+      ((!tmlExp any)* tmlExp)+ !tmlExp any* <Trex::Parsers::Nodes::Invocation>
+    end
 
-  rule method
-    'tr' 'l'? <Trex::Parsers::Nodes::Method>
-  end
+    # TMLLocalizedString* expression
+    rule tmlExp
+      macro space* "(" space* tmlArgs space* ")" space* ";"? <Trex::Parsers::Nodes::Invocation>
+    end
+    
+    rule tmlArgs
+      stringObjectExp (space* "," argsExp)* <Trex::Parsers::Nodes::Params>
+    end
+      
+    rule macro
+      "TMLLocalized" "Attributed"? ("String" / "Date") <Trex::Parsers::Nodes::Method>
+    end
 
-  rule params
-    space? string space? <Trex::Parsers::Nodes::Params> / space? string space? ',' space? string space? <Trex::Parsers::Nodes::Params>
-  end
+    # TMLLocalized argument expression
+    rule argsExp
+      nullExp
+      / literalExp
+      / objectExp
+      / messageExp
+      / collectionAccessExp
+      / variableExp
+    end
 
-  rule string
-    '"' ([^"\\] / "\\" . )* '"' <Trex::Parsers::Nodes::String> / "'" ([^'\\] / "\\" . )* "'" <Trex::Parsers::Nodes::String>
-  end
+    # Null Expression
+    rule nullExp
+      "nil"
+      / "NULL"
+    end
 
-  rule space
-    [\s]+
-  end
+    rule collectionAccessExp
+      variableExp "[" argsExp "]"
+    end
 
+    rule variableExp
+      validVarChar+
+    end
+
+    rule validVarChar
+      !( "[" / "]" / ":" / "," / ")" / "(" / space) any
+    end
+
+    # Literal Objects
+    rule literalExp
+      numberExp
+      / stringExp
+    end
+
+    rule objectExp
+      stringObjectExp
+      / numberObjectExp
+      / dictExp
+      / arrayExp
+      / literalWrapExp
+    end
+
+    # Literal Wrap @(WHATEVER)
+    rule literalWrapExp
+      "@(" space* variableExp space* ")"
+    end
+
+    # Numbers
+    rule numberExp
+      digit+
+    end
+
+    rule numberObjectExp
+      "@" numberExp
+    end
+
+    # Strings
+    rule stringObjectExp
+      "@" stringExp stringObjectAdditionalLinesExp*
+    end
+
+    rule stringObjectAdditionalLinesExp
+      "@"? stringExp
+    end
+
+    rule stringExp
+      "\"" stringCharsExp "\""
+    end
+
+    rule stringCharsExp
+      stringChar* <Trex::Parsers::Nodes::String>
+    end
+
+    rule stringChar
+      "\\\""
+      / !"\"" any
+    end
+
+    # Dictionary
+    rule dictExp
+      "@{" dictEntryExp ("," dictEntryExp)* "}"
+    end
+
+    rule dictEntryExp
+      stringObjectExp ":" dictValueExp
+    end
+
+    rule dictValueExp
+      argsExp
+    end
+
+    # Array
+    rule arrayExp
+      "@[" arrayEntryExp ("," arrayEntryExp)* "]"
+    end
+
+    rule arrayEntryExp
+      argsExp
+    end
+
+    # Message
+    rule messageExp
+      noArgumentMessageExp
+      / argumentMessageExp
+    end
+
+    rule receiver
+      messageComponentChar+
+    end
+
+    rule noArgumentMessage
+      messageComponentChar+
+    end
+
+    rule argumentMessage
+      messageComponentChar+ ":"
+    end
+
+    rule noArgumentMessageExp
+      "[" receiver noArgumentMessage "]"
+    end
+
+    rule argumentMessageExp
+      "[" receiver (argumentMessage argsExp)+ "]"
+    end
+
+    rule messageComponent
+      messageComponentChar+
+    end
+
+    rule messageComponentChar
+      !( "[" / "]" / ":" / space) any
+    end
 end
