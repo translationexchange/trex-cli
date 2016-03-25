@@ -1,0 +1,36 @@
+grammar Base
+
+  rule any
+      .
+  end
+  
+  rule space
+    " " / "\t" / "\n" / "\r"
+  end
+
+  # an alpha-numeric character
+  rule alnum
+    letter 
+    / digit
+  end
+
+  # a letter
+  rule letter
+    lower
+    / upper
+    / unicodeLtmo
+  end
+
+  # a letter
+  rule digit
+    "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+  end
+
+  # a hexadecimal digit
+  rule hexDigit
+    digit
+    / "a" / "b" / "c" / "d" / "e" / "f"
+    / "A" / "B" / "C" / "D" / "E" / "F"
+  end
+
+end
