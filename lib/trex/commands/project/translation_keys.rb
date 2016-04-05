@@ -33,21 +33,24 @@
 
 module Trex
   module Commands
-    class ProjectTranslationKey < Trex::Commands::Base
-      namespace :translation_key
+    module Project
+      class TranslationKeys < Trex::Commands::Base
+        namespace :translation_keys
 
-      map 'l' => :list
-      desc 'list', 'Lists all translation keys for the current project'
-      def list
-        ensure_project_selected
+        map 'l' => :list
+        desc 'list', 'Lists all translation keys for the current project'
 
-        paginate("v1/projects/#{current_project_key}/translation_keys", {}, {
-           :header => "#{current_project_name} translation keys:",
-           :index => true,
-           :columns => [:id, :key, {:key => :label, :width => 100}, :locale, :word_count, :length, :registered_at, :verified_at]
-        })
+        def list
+          ensure_project_selected
+
+          paginate("v1/projects/#{current_project_key}/translation_keys", {}, {
+                                                                            :header => "#{current_project_name} translation keys:",
+                                                                            :index => true,
+                                                                            :columns => [:id, :key, {:key => :label, :width => 100}, :locale, :word_count, :length, :registered_at, :verified_at]
+                                                                        })
+        end
+
       end
-
     end
   end
 end

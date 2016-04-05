@@ -2,14 +2,18 @@ module Trex
   module Parsers
     class Objc < Trex::Parsers::Base
 
-      Treetop.load(grammar_path('base.treetop'))
-      Treetop.load(grammar_path('objc.treetop'))
-      @@objc_parser = ObjcParser.new
+      def parser
+        @parser ||= begin
+          Treetop.load(grammar_path('base.treetop'))
+          Treetop.load(grammar_path('objc.treetop'))
+          ObjcParser.new
+        end
+      end
 
       def self.parse(data)
         # pp data
 
-        tree = @@objc_parser.parse(data)
+        tree = parser.parse(data)
 
         # pp @@rails_parser
 

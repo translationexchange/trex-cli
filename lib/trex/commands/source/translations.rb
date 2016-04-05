@@ -33,21 +33,26 @@
 
 module Trex
   module Commands
-    class Request < Trex::Commands::Base
-      namespace :request
+    module Source
+      class Translations < Trex::Commands::Base
+        namespace :translations
 
-      map 'l' => :list
-      desc 'list', 'Lists all requests for the current project'
-      def list
-        ensure_project_selected
+        map 'l' => :list
+        desc 'list', 'Lists all translations for the current project'
+        method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to remove', :default => nil
+        method_option :filter, :type => :string, :aliases => '-f', :required => false, :banner => 'filters translations (submitted, locked, unlocked, purchased, imported, ignored)', :default => nil
 
-        paginate("v1/projects/#{current_project_key}/requests", {}, {
-          :header => "#{current_project_name} requests:",
-          :index => true,
-          :columns => [:id, :key, :type, :email, :status, :created_at]
-        })
+        def list
+          ensure_source_selected
+
+          paginate("v1/sources/#{current_source_id}/translations", {list: true, locale: options[:locale], filter: options[:filter]}, {
+                                                                     :header => "#{current_project_name} #{current_source_name} translations:",
+                                                                     :index => true,
+                                                                     :columns => [:id, {key: 'translation_key.label', width: 50}, {key: 'label', width: 50}, :locale, :rank, :machine, :submitted, :locked, :imported, :ordered, :deleted]
+                                                                 })
+        end
+
       end
-
     end
   end
 end

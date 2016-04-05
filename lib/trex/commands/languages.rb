@@ -33,21 +33,30 @@
 
 module Trex
   module Commands
-    class SourceTranslation < Trex::Commands::Base
-      namespace :translation
+    class Languages < Trex::Commands::Base
+      namespace :languages
 
       map 'l' => :list
-      desc 'list', 'Lists all translations for the current project'
-      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to remove', :default => nil
-      method_option :filter, :type => :string, :aliases => '-f', :required => false, :banner => 'filters translations (submitted, locked, unlocked, purchased, imported, ignored)', :default => nil
+      desc 'list', 'Lists all languages in Translation Exchange'
+      method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
+      method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
       def list
-        ensure_source_selected
-
-        paginate("v1/sources/#{current_source_id}/translations", {list: true, locale: options[:locale], filter: options[:filter]}, {
-           :header => "#{current_project_name} #{current_source_name} translations:",
-           :index => true,
-           :columns => [:id, {key: 'translation_key.label', width: 50}, {key: 'label', width: 50}, :locale, :rank, :machine, :submitted, :locked, :imported, :ordered, :deleted]
+        paginate('v1/languages', {search: options[:search], per_page: options[:per_page]}, {
+           :header => "Languages from #{current_config['remote']}:",
+           :index => true
         })
+        say
+      end
+
+      map 's' => :show
+      desc 'show', 'Shows information about a language'
+      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to view', :default => nil
+      def show
+        locale = options[:locale] || ask('What locale would you like to see? ')
+
+        data = get("v1/languages/#{locale}")
+
+        print_object(data, :header => 'Language details:')
       end
 
     end

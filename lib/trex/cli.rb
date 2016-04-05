@@ -137,17 +137,17 @@ module Trex
     desc 'rules SUBCOMMAND ...ARGS', 'Test and evaluate TML rules'
     subcommand 'rules', Trex::Commands::Rules
 
-    desc 'remote SUBCOMMAND ...ARGS', 'Manage which host the applications are located at'
-    subcommand 'remote', Trex::Commands::Remote
+    desc 'remotes SUBCOMMAND ...ARGS', 'Manage which host the applications are located at'
+    subcommand 'remotes', Trex::Commands::Remotes
 
     # desc 'connection SUBCOMMAND ...ARGS', 'manage which database the applications are stored in'
     # subcommand 'connection', Trex::Commands::Connection
 
-    desc 'language SUBCOMMAND ...ARGS', 'Language commands'
-    subcommand 'language', Trex::Commands::Language
+    desc 'languages SUBCOMMAND ...ARGS', 'Language commands'
+    subcommand 'languages', Trex::Commands::Languages
 
-    desc 'project SUBCOMMAND ...ARGS', 'Project commands'
-    subcommand 'project', Trex::Commands::Project
+    desc 'projects SUBCOMMAND ...ARGS', 'Project commands'
+    subcommand 'projects', Trex::Commands::Projects
 
     private
 

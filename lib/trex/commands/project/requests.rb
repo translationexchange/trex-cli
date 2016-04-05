@@ -33,32 +33,24 @@
 
 module Trex
   module Commands
-    class Language < Trex::Commands::Base
-      namespace :language
+    module Project
+      class Requests < Trex::Commands::Base
+        namespace :requests
 
-      map 'l' => :list
-      desc 'list', 'Lists all languages in Translation Exchange'
-      method_option :search, :type => :string, :aliases => '-s', :required => false, :banner => 'search by name', :default => nil
-      method_option :per_page, :type => :numeric, :aliases => '-p', :required => false, :banner => 'items per page', :default => 30
-      def list
-        paginate('v1/languages', {search: options[:search], per_page: options[:per_page]}, {
-           :header => "Languages from #{current_config['remote']}:",
-           :index => true
-        })
-        say
+        map 'l' => :list
+        desc 'list', 'Lists all requests for the current project'
+
+        def list
+          ensure_project_selected
+
+          paginate("v1/projects/#{current_project_key}/requests", {}, {
+                                                                    :header => "#{current_project_name} requests:",
+                                                                    :index => true,
+                                                                    :columns => [:id, :key, :type, :email, :status, :created_at]
+                                                                })
+        end
+
       end
-
-      map 's' => :show
-      desc 'show', 'Shows information about a language'
-      method_option :locale, :type => :string, :aliases => '-l', :required => false, :banner => 'locale to view', :default => nil
-      def show
-        locale = options[:locale] || ask('What locale would you like to see? ')
-
-        data = get("v1/languages/#{locale}")
-
-        print_object(data, :header => 'Language details:')
-      end
-
     end
   end
 end

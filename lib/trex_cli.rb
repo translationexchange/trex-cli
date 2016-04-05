@@ -40,11 +40,7 @@ end
 
 %w(
     trex/config.rb trex/commands/base.rb
-    trex/commands/project_translator.rb trex/commands/project_language.rb
-    trex/commands/project_translation_key.rb trex/commands/project_translation.rb
-    trex/commands/source_translation_key.rb trex/commands/source_translation.rb
-    trex/commands/request.rb trex/commands/source.rb trex/commands/order.rb
-    trex/commands
+    trex/commands/source trex/commands/project trex/commands
     trex/tasks/base.rb
     trex/tasks trex/cli.rb
     trex/parsers/nodes/base.rb trex/parsers/nodes trex/parsers/base.rb trex/parsers

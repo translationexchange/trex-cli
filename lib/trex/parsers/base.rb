@@ -50,6 +50,10 @@ module Trex
         File.join(grammar_base_path, name)
       end
 
+      def parser
+        raise 'Must be implemented by the extending class'
+      end
+
       protected
 
       def self.clean_tree(root_node)

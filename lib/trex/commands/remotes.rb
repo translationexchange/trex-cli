@@ -33,49 +33,61 @@
 
 module Trex
   module Commands
-    class ProjectTranslator < Trex::Commands::Base
-      namespace :translator
+    class Remotes < Trex::Commands::Base
+      namespace :remotes
 
-      map 'l' => :list
-      desc 'list', 'Lists all translators for the current project'
-      def list
-        ensure_project_selected
+      map 'a' => :add
+      desc 'add', 'adds a TrEx service location'
+      method_option :name, :type => :string, :aliases => '-n', :required => false, :banner => 'remote name', :default => nil
+      method_option :api_host, :type => :string, :aliases => '-a', :required => false, :banner => 'host url (starting with http[s]://)', :default => nil
+      method_option :gateway_host, :type => :string, :aliases => '-g', :required => false, :banner => 'host url (starting with http[s]://)', :default => nil
+      def add
+        say('Please provide the following information for setting up a TrEx remote host:')
+        name = options[:name] || ask('What is the name of this remote? ')
 
-        paginate("v1/projects/#{current_project_key}/translators", {}, {
-           :header => "#{current_project_name} translators:",
-           :index => true,
-           :columns => [:id, 'translator.user_id', 'translator.email', 'translator.display_name', 'translator.rank', :created_at, :updated_at]
-        })
+        unless remotes[name].nil?
+          return unless yes?('This remote already exists, would you like to overwrite it? (Y/n)')
+        end
+
+        url = options[:api_host] || ask('Remote URL (starting with http/s): ')
+        url = options[:gateway_host] || ask('Remote URL (starting with http/s): ')
+        remotes[name] = {
+            'url' => url,
+        }
+
+        update_config
+
+        say('Configuration has been updated')
       end
 
-      map 'i' => :invite
-      desc 'invite', 'Invites a translator'
-      method_option :emails, :type => :string, :aliases => '-e', :required => false, :banner => 'emails of the translators to be invited', :default => nil
-      method_option :message, :type => :string, :aliases => '-m', :required => false, :banner => 'message to the translators', :default => ''
-      method_option :role, :type => :string, :aliases => '-r', :required => false, :banner => 'role of the translator', :default => 'translator'
-      def invite
-        ensure_project_selected
-
-        emails = options[:emails] || ask('What is the email of the translator you would like to invite? ')
-
-        post("v1/projects/#{current_project_key}/requests", {emails: emails, type: 'invite', role: options[:role], message: options[:message]})
-
-        say("The following emails have been invited: #{emails}")
+      map 'l' => :list
+      desc 'list', 'lists all configured TrEx services'
+      def list
+        paginate(remote_list, {
+            :header => 'TrEx services:',
+            :with_numbers => true
+        })
+        say
       end
 
       map 'r' => :remove
-      desc 'remove', 'Removes translator from the project'
-      method_option :id, :type => :string, :aliases => '-i', :required => false, :banner => 'project translator id to be removed', :default => nil
+      desc 'remove', 'removes a remote TrEx service'
       def remove
-        ensure_project_selected
+        paginate(remote_list, {
+            :header => 'Trex services:',
+            :with_numbers => true
+        })
 
-        id = options[:id] || ask('What is the id of the project translator record you would like to remove? ')
+        say('Note: all applications from this remote service will be removed. Which service would you like to remove?')
+        value = ask_for_number(remote_list.size)
+        remote = remote_list[value-1]
+        remotes.delete(remote['key'])
+        update_config
 
-        delete("v1/projects/#{current_project_key}/translators/#{id}")
-
-        say("Translator '#{id}' has been removed")
-        list
+        say('The remote has been removed')
+        say
       end
+
     end
   end
 end

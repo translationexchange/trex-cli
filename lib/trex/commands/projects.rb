@@ -33,8 +33,8 @@
 
 module Trex
   module Commands
-    class Project < Trex::Commands::Base
-      namespace :project
+    class Projects < Trex::Commands::Base
+      namespace :projects
 
       map 'l' => :list
       desc 'list', 'Lists all apps and allows you to switch between them'
@@ -109,26 +109,29 @@ module Trex
         Extractors::Base.extract(self, options[:source], options[:destination], options[:grammar])
       end
 
-      desc 'translator SUBCOMMAND ...ARGS', 'Project translator commands'
-      subcommand 'translator', Trex::Commands::ProjectTranslator
+      desc 'translators SUBCOMMAND ...ARGS', 'Project translator commands'
+      subcommand 'translators', Trex::Commands::Project::Translators
 
-      desc 'language SUBCOMMAND ...ARGS', 'Project language commands'
-      subcommand 'language', Trex::Commands::ProjectLanguage
+      desc 'languages SUBCOMMAND ...ARGS', 'Project language commands'
+      subcommand 'languages', Trex::Commands::Project::Languages
 
-      desc 'translation_key SUBCOMMAND ...ARGS', 'Project translation key commands'
-      subcommand 'translation_key', Trex::Commands::ProjectTranslationKey
+      desc 'translation_keys SUBCOMMAND ...ARGS', 'Project translation key commands'
+      subcommand 'translation_keys', Trex::Commands::Project::TranslationKeys
 
-      desc 'translation SUBCOMMAND ...ARGS', 'Project translation commands'
-      subcommand 'translation', Trex::Commands::ProjectTranslation
+      desc 'translations SUBCOMMAND ...ARGS', 'Project translation commands'
+      subcommand 'translations', Trex::Commands::Project::Translations
 
-      desc 'source SUBCOMMAND ...ARGS', 'Project source commands'
-      subcommand 'source', Trex::Commands::Source
+      desc 'sources SUBCOMMAND ...ARGS', 'Project source commands'
+      subcommand 'sources', Trex::Commands::Project::Sources
 
-      desc 'request SUBCOMMAND ...ARGS', 'Project request commands'
-      subcommand 'request', Trex::Commands::Request
+      desc 'requests SUBCOMMAND ...ARGS', 'Project request commands'
+      subcommand 'requests', Trex::Commands::Project::Requests
 
-      desc 'order SUBCOMMAND ...ARGS', 'Project order commands'
-      subcommand 'order', Trex::Commands::Order
+      desc 'orders SUBCOMMAND ...ARGS', 'Project order commands'
+      subcommand 'orders', Trex::Commands::Project::Orders
+
+      desc 'files SUBCOMMAND ...ARGS', 'Project file commands'
+      subcommand 'files', Trex::Commands::Project::Files
 
     end
   end
