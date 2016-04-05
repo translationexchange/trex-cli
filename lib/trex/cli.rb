@@ -149,6 +149,9 @@ module Trex
     desc 'projects SUBCOMMAND ...ARGS', 'Project commands'
     subcommand 'projects', Trex::Commands::Projects
 
+    desc 'bookmarks SUBCOMMAND ...ARGS', 'Bookmark commands'
+    subcommand 'bookmarks', Trex::Commands::Bookmarks
+
     private
 
     def tr(label, description = nil, tokens = {}, options = {})

@@ -33,8 +33,26 @@
 
 module Trex
   module Commands
-    class Bookmark < Trex::Commands::Base
-      namespace :bookmark
+    class Bookmarks < Trex::Commands::Base
+      namespace :bookmarks
+
+      map 'l' => :list
+      desc 'list', 'Lists all project bookmarks'
+      def list
+
+      end
+
+      map 'a' => :add
+      desc 'add', 'Adds a project bookmark'
+      def add
+
+      end
+
+      map 'r' => :remove
+      desc 'remove', 'Removes a project bookmark'
+      def remove
+
+      end
 
     end
   end
